@@ -17,9 +17,25 @@ NetID: jl909
 #import the file into R with the labeled column
 df <- read.table("features_1.csv",header= TRUE,sep = ",")
 head(df,10) #prints the first few lines of the dataframe including header row
+
+#add columns to df 
+df$D1 = df$X0.1-df$X1
+df$D2 = df$X2-df$X3
+df$D3 = df$X4-df$X5
+df$D4 = df$X6-df$X7
+df$D5 = df$X8-df$X9
+df$D6 = df$X10-df$X11
+df$D7 = df$X12-df$X13
+df$D8 = df$X14-df$X15
+df$D9 = df$X16-df$X17
+df$D10 = df$X18-df$X19
+df$D11 = df$X20-df$X21
+df$D12 = df$X22-df$X23
+
+
 ```
 
-
+1a) train/test
 ```{r}
 # splits into test and train
 library(caTools)
@@ -32,11 +48,17 @@ test.set = subset(df, sample == FALSE)
 
 ```{r}
 library(glmulti)
+
+# for later :  X13 + X15 + X17 + X18 + X19 + X21 + X20 + X21 + X23 + X2 + X3 +X4 + X5 +X6 +X7 +X8
+# predictors for rbc2gas sand rbc2gas_binning X8+X9+X10+X11+X12+X13+X14+X15
+# predictors for gas and gas_binning X16+X17+X18+X19+X20+X21+X22+X23
+# predictors for differences between out and in D1+D2+D3+D4+D5+D6+D7+D8+D9+D10+D11+D12
 glmulti.logistic.out <-
-    glmulti(X0.2 ~  X13 + X15 + X17 + X18 + X19 + X21 + X20 + X21 + X23 + X2 + X3 +X4 + X5 +X6 +X7 +X8, data = train.set,
+    glmulti(X0.2 ~ D1+D2+D3+D4+D5+D6+D7+D8+D9+D10+D11+D12,
+            data = train.set,
             level = 1,               # No interaction considered
             method = "h",            # Exhaustive approach
-            crit = "aic",            # AIC as criteria
+            crit = "aicc",            # AIC as criteria
             confsetsize = 5,         # Keep 5 best models
             plotty = F, report = F,  # No plot or interim reports
             fitfunction = "glm",     # glm function
@@ -52,11 +74,11 @@ summary(glmulti.logistic.out@objects[[1]])
 
 ```{r}
 library(gmodels)
-## Show result for the best model
+## Show result for the best model on test data
 prediction = predict(glmulti.logistic.out@objects[[1]],test.set) > 0
 y.test = test.set$X0.2 == "NSIP"
 
-#calculate cross table
+#calculate cross table for test
 crosstable_output = CrossTable(prediction, y.test, prop.chisq=FALSE )
 
 accuracy = (crosstable_output$t[1]+crosstable_output$t[4])/sum(crosstable_output$t) #accuracy = TP+TN/Total
@@ -64,9 +86,109 @@ sensitivity = (crosstable_output$t[1])/(crosstable_output$t[1]+crosstable_output
 precision = (crosstable_output$t[1])/(crosstable_output$t[1]+crosstable_output$t[3]) #precision = TP/TP+FP
 errorrate = (crosstable_output$t[2]+crosstable_output$t[3])/sum(crosstable_output$t) #error rate = FP+FN/Total
 
-print(paste("the accuracy is ",accuracy))
-print(paste("the sensitivity is ", sensitivity))
-print(paste("the precision is ",precision))
-print(paste("the error rate is ",errorrate))
+print(paste("the test accuracy is ",accuracy))
+print(paste("the test sensitivity is ", sensitivity))
+print(paste("the test precision is ",precision))
+print(paste("the test error rate is ",errorrate))
 ```
+```{r}
+
+prediction = predict(glmulti.logistic.out@objects[[1]],train.set) > 0
+y.train = train.set$X0.2 == "NSIP"
+
+#calculate cross table for train
+crosstable_output = CrossTable(prediction, y.train, prop.chisq=FALSE )
+
+accuracy = (crosstable_output$t[1]+crosstable_output$t[4])/sum(crosstable_output$t) #accuracy = TP+TN/Total
+sensitivity = (crosstable_output$t[1])/(crosstable_output$t[1]+crosstable_output$t[2]) #sensitivity = TP/TP+FN
+precision = (crosstable_output$t[1])/(crosstable_output$t[1]+crosstable_output$t[3]) #precision = TP/TP+FP
+errorrate = (crosstable_output$t[2]+crosstable_output$t[3])/sum(crosstable_output$t) #error rate = FP+FN/Total
+
+print(paste("the train accuracy is ",accuracy))
+print(paste("the train sensitivity is ", sensitivity))
+print(paste("the train precision is ",precision))
+print(paste("the trainthis is  error rate is ",errorrate))
+```
+
+2)  
+```{r}
+#import the file into R with the labeled column
+df <- read.table("features_2.csv",header= TRUE,sep = ",")
+head(df,10) #prints the first few lines of the dataframe including header row
+```
+
+
+```{r}
+# splits into test and train
+library(caTools)
+set.seed(123)
+df =  subset(df, select= -c(X,X0))
+sample = sample.split(df,SplitRatio = .8)
+train.set = subset(df, sample == TRUE)
+test.set = subset(df, sample == FALSE)
+```
+
+```{r}
+library(glmulti)
+# original subset for glmulti X1+X8+X11+X17+X23+X24+X29+X30+X31+X32+X33+X34+X35+X0.1
+# predictors for rbc2gas sand rbc2gas_binning X12+X13+X14+X15+X16+X17+X18+X19+X20+X21+X22+X23+X24
+# predictors for gas and gas_binning X25+X26+X27+X28+X29+X30+X31+X32+X33+X34+X35
+glmulti.logistic.out <-
+    glmulti(X0.2 ~  X25+X26+X27+X28+X29+X30+X31+X32+X33+X34+X35, data = train.set,
+            level = 1,               # No interaction considered
+            method = "h",            # Exhaustive approach
+            crit = "aicc",            # AIC as criteria
+            confsetsize = 5,         # Keep 5 best models
+            plotty = F, report = F,  # No plot or interim reports
+            fitfunction = "glm",     # glm function
+            family = binomial)       # binomial family for logistic regression
+
+## Show 5 best models (Use @ instead of $ for an S4 object)
+glmulti.logistic.out@formulas
+```
+
+```{r}
+summary(glmulti.logistic.out@objects[[1]])
+```
+
+```{r}
+library(gmodels)
+## Show result for the best model on test data
+prediction = predict(glmulti.logistic.out@objects[[1]],test.set) > 0
+y.test = test.set$X0.2 == "NSIP"
+
+#calculate cross table for test
+crosstable_output = CrossTable(prediction, y.test, prop.chisq=FALSE )
+
+accuracy = (crosstable_output$t[1]+crosstable_output$t[4])/sum(crosstable_output$t) #accuracy = TP+TN/Total
+sensitivity = (crosstable_output$t[1])/(crosstable_output$t[1]+crosstable_output$t[2]) #sensitivity = TP/TP+FN
+precision = (crosstable_output$t[1])/(crosstable_output$t[1]+crosstable_output$t[3]) #precision = TP/TP+FP
+errorrate = (crosstable_output$t[2]+crosstable_output$t[3])/sum(crosstable_output$t) #error rate = FP+FN/Total
+
+print(paste("the test accuracy is ",accuracy))
+print(paste("the test sensitivity is ", sensitivity))
+print(paste("the test precision is ",precision))
+print(paste("the test error rate is ",errorrate))
+```
+
+
+
+```{r}
+prediction = predict(glmulti.logistic.out@objects[[1]],train.set) > 0
+y.train = train.set$X0.2 == "NSIP"
+
+#calculate cross table for train
+crosstable_output = CrossTable(prediction, y.train, prop.chisq=FALSE )
+
+accuracy = (crosstable_output$t[1]+crosstable_output$t[4])/sum(crosstable_output$t) #accuracy = TP+TN/Total
+sensitivity = (crosstable_output$t[1])/(crosstable_output$t[1]+crosstable_output$t[2]) #sensitivity = TP/TP+FN
+precision = (crosstable_output$t[1])/(crosstable_output$t[1]+crosstable_output$t[3]) #precision = TP/TP+FP
+errorrate = (crosstable_output$t[2]+crosstable_output$t[3])/sum(crosstable_output$t) #error rate = FP+FN/Total
+
+print(paste("the train accuracy is ",accuracy))
+print(paste("the train sensitivity is ", sensitivity))
+print(paste("the train precision is ",precision))
+print(paste("the train error rate is ",errorrate))
+```
+
 
