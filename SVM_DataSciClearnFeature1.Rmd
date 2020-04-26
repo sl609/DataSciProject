@@ -1,0 +1,299 @@
+---
+title: "SVMCV"
+author: "Suphachart Leewiwatwong"
+date: "4/20/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+## Data Preparation
+1) 
+```{r}
+#import the file into R with the labeled column
+```
+
+
+```{r}
+df <- read.table("/home/peppermint/Data_Sci/DataSciProject/features_1.csv",header= TRUE,sep = ",")
+head(df,10) #prints the first few lines of the dataframe including header row
+```
+
+
+
+```{r}
+# splits into test and train
+library(caTools)
+set.seed(1234)
+all_data =  subset(df, select= -c(X,X0))
+
+```
+
+```{r}
+library(caret)
+	
+trctrl <- trainControl(method = "repeatedcv", number = 10, repeats = 3)
+```
+
+
+```{r}
+
+	
+grid <- expand.grid(C = c(0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2,5))
+set.seed(123)
+svm_Linear_Grid <- train(X0.2 ~., data = all_data, method = "svmLinear",
+                    trControl=trctrl,
+                    tuneGrid = grid)
+ 
+svm_Linear_Grid
+```
+```{r}
+ confusionMatrix(svm_Linear_Grid)
+```
+
+
+```{r}
+accuracy <- function(table)
+{
+(table[1,1]+table[2,2])/sum(table)
+}
+```
+
+```{r}
+error_rate<- function(table)
+{
+(table[1,2]+table[2,1])/sum(table)
+}
+```
+
+
+```{r}
+sensitivity <- function(table)
+{
+(table[1,1])/(table[1,1]+table[2,1])
+}
+```
+
+
+```{r}
+precision <- function(table)
+{
+(table[1,1])/(table[1,1]+table[1,2])
+}
+```
+
+
+
+```{r}
+specificity <- function(table)
+{
+(table[2,2])/(table[2,2]+table[2,1])
+}
+```
+
+
+```{r}
+f1 <- function(table)
+{
+(2*table[1,1])/(2*table[1,1]+table[2,1]+table[1,2])
+}
+```
+
+
+
+
+```{r}
+ table1 <- confusionMatrix(svm_Linear_Grid,"average")
+confusion_table <- table1$table
+cat("accuracy",accuracy(confusion_table),"\nerror_rate",error_rate(confusion_table),"\nsensitivity",sensitivity(confusion_table),"\nspecificity",specificity(confusion_table),"\nf1 score",f1(confusion_table),"\nprecision",precision(confusion_table))
+```
+
+
+```{r}
+plot(svm_Linear_Grid, main="SVM Linear")
+```
+
+
+
+```{r}
+grid_radial <- expand.grid(sigma = c(0,0.01, 0.02, 0.025, 0.03, 0.04,
+ 0.05, 0.06, 0.07,0.08, 0.09, 0.1, 0.25, 0.5, 0.75,0.9),
+ C = c(0.01, 0.05, 0.1, 0.25, 0.5, 0.75,
+ 1, 1.5, 2,5))
+set.seed(123)
+svm_Radial_Grid <- train(X0.2 ~., data = all_data, method = "svmRadial",
+                    trControl=trctrl,
+                    tuneGrid = grid_radial
+                    )
+```
+
+```{r}
+svm_Radial_Grid
+```
+
+```{r}
+ confusionMatrix(svm_Radial_Grid,"average")
+```
+
+
+
+
+```{r}
+ table1 <- confusionMatrix(svm_Radial_Grid,"average")
+confusion_table <- table1$table
+cat("accuracy",accuracy(confusion_table),"\nerror_rate",error_rate(confusion_table),"\nsensitivity",sensitivity(confusion_table),"\nspecificity",specificity(confusion_table),"\nf1 score",f1(confusion_table),"\nprecision",precision(confusion_table))
+```
+
+
+
+```{r}
+plot(svm_Radial_Grid,main="SVM RBF")
+```
+
+
+```{r}
+
+grid_Poly <- expand.grid(degree=c(1,2,3),scale =c(0.01, 0.05, 0.1, 0.25, 0.5, 0.75,
+ 1, 1.5, 2,5),
+ C = c(0.01, 0.05, 0.1, 0.25, 0.5, 0.75,
+ 1, 1.5, 2,5))
+set.seed(123)
+svm_Poly_Grid <- train(X0.2 ~., data = all_data, method = "svmPoly",
+                    trControl=trctrl,
+                    tuneGrid = grid_Poly
+                    )
+```
+
+```{r}
+svm_Poly_Grid
+```
+
+```{r}
+ table1 <- confusionMatrix(svm_Poly_Grid,"average")
+confusion_table <- table1$table
+cat("accuracy",accuracy(confusion_table),"\nerror_rate",error_rate(confusion_table),"\nsensitivity",sensitivity(confusion_table),"\nspecificity",specificity(confusion_table),"\nf1 score",f1(confusion_table),"\nprecision",precision(confusion_table))
+```
+
+
+
+```{r}
+plot(svm_Poly_Grid ,main="SVM Polynomial")
+```
+
+
+
+#################################################################################################################################################################################################################################################################################
+
+
+
+```{r}
+
+	
+grid <- expand.grid(C = c(0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2,5))
+set.seed(123)
+svm_Linear_Grid <- train(X0.2 ~ 1 + X13 + X17 + X18 + X21 + X20 + X23 + X3 + X4, data = all_data, method = "svmLinear",
+                    trControl=trctrl,
+                    tuneGrid = grid)
+ 
+svm_Linear_Grid
+```
+
+
+
+
+
+
+```{r}
+ table1 <- confusionMatrix(svm_Linear_Grid,"average")
+confusion_table <- table1$table
+cat("accuracy",accuracy(confusion_table),"\nerror_rate",error_rate(confusion_table),"\nsensitivity",sensitivity(confusion_table),"\nspecificity",specificity(confusion_table),"\nf1 score",f1(confusion_table))
+```
+
+
+```{r}
+plot(svm_Linear_Grid, main="SVM Linear")
+```
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+grid_radial <- expand.grid(sigma = c(0,0.01, 0.02, 0.025, 0.03, 0.04,
+ 0.05, 0.06, 0.07,0.08, 0.09, 0.1, 0.25, 0.5, 0.75,0.9),
+ C = c(0.01, 0.05, 0.1, 0.25, 0.5, 0.75,
+ 1, 1.5, 2,5))
+set.seed(123)
+svm_Radial_Grid <- train(X0.2 ~ 1 + X13 + X17 + X18 + X21 + X20 + X23 + X3 + X4, data = all_data, method = "svmRadial",
+                    trControl=trctrl,
+                    tuneGrid = grid_radial
+                    )
+```
+
+
+
+```{r}
+ table1 <- confusionMatrix(svm_Radial_Grid,"average")
+confusion_table <- table1$table
+cat("accuracy",accuracy(confusion_table),"\nerror_rate",error_rate(confusion_table),"\nsensitivity",sensitivity(confusion_table),"\nspecificity",specificity(confusion_table),"\nf1 score",f1(confusion_table))
+```
+
+
+
+```{r}
+svm_Radial_Grid
+```
+
+
+
+```{r}
+plot(svm_Radial_Grid,main="SVM RBF")
+```
+
+
+
+
+
+
+
+```{r}
+
+grid_Poly <- expand.grid(degree=c(2,3,4),scale =c(0.01, 0.05, 0.1, 0.25, 0.5, 0.75,
+ 1, 1.5, 2,5),
+ C = c(0.01, 0.05, 0.1, 0.25, 0.5, 0.75,
+ 1, 1.5, 2,5))
+set.seed(123)
+svm_Poly_Grid <- train(X0.2 ~ 1 + X13 + X17 + X18 + X21 + X20 + X23 + X3 + X4, data = all_data, method = "svmPoly",
+                    trControl=trctrl,
+                    tuneGrid = grid_Poly
+                    )
+```
+
+
+```{r}
+svm_Poly_Grid
+```
+
+```{r}
+ table1 <- confusionMatrix(svm_Poly_Grid,"average")
+confusion_table <- table1$table
+cat("accuracy",accuracy(confusion_table),"\nerror_rate",error_rate(confusion_table),"\nsensitivity",sensitivity(confusion_table),"\nspecificity",specificity(confusion_table),"\nf1 score",f1(confusion_table))
+```
+
+
+
+```{r}
+plot(svm_Poly_Grid ,main="SVM Polynomial")
+```
+
+
